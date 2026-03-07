@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { Brain } from 'lucide-react'
 import { BookOpen, Calendar, Smile, PlusCircle, Tag, Sparkles, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
 import { createEntry, getMyEntries } from "../services/journal.service";
+import { getInsights } from "../services/ai.service";
 
 interface JournalEntry {
   id: string;
@@ -33,6 +35,20 @@ export default function Journal() {
   useEffect(() => {
     fetchEntries();
   }, []);
+
+  const [ insights, setInsights] = useState<string[]>([]);
+  const [loadingInsights, setLoadingInsights] = useState(false);
+
+  const generateInsights = async () =>{
+    setLoadingInsights(true);
+    try{
+      const data = await getInsights();
+      setInsights(data.insights);
+    } catch {
+      alert("Failed to generate insights");
+    }
+    setLoadingInsights(false);
+  }
 
   const fetchEntries = async () => {
     try {
@@ -112,6 +128,31 @@ export default function Journal() {
             {notification}
           </div>
         )}
+        <section className="bg-white rounded-3xl shadow-xl p-6 border border-gray-200">
+  <div className="flex justify-between items-center mb-4">
+    <div className="flex items-center gap-2">
+      <Brain className="w-5 h-5 text-purple-600"/>
+      <h2 className="text-xl font-semibold">AI Insights</h2>
+    </div>
+
+    <button
+      onClick={generateInsights}
+      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
+    >
+      {loadingInsights ? "Analyzing..." : "Generate Insights"}
+    </button>
+  </div>
+
+  {insights ? (
+    <div className="text-gray-700 whitespace-pre-line">
+      {insights}
+    </div>
+  ) : (
+    <p className="text-gray-400 text-sm">
+      Generate insights to discover patterns in your mood and activities.
+    </p>
+  )}
+</section>
 
         {/* Input Section */}
         <section className="bg-white rounded-3xl shadow-xl p-8 border border-gray-200">
